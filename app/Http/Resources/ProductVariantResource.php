@@ -20,8 +20,8 @@ class ProductVariantResource extends JsonResource
             'sku' => $this->sku,
             'price' => $this->price,
             'stock_quantity' => $this->stock_quantity,
-            'image_url' => $this->image_url,
-            'attibutes' => AttributeValueResource::collection($this->whenLoaded('attributeValues')),
+            'image_path' => $this->image_path,
+            'attributes' => AttributeValueResource::collection($this->whenLoaded('attributeValues')),
         ];
     }
 }

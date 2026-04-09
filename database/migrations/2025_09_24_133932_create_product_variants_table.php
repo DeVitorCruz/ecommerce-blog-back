@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('sku')->unique()->nullable();
             $table->decimal('price', 8, 2);
             $table->integer('stock_quantity');
-            $table->string('image_url')->nullable();
+            $table->string('image_path')->nullable();
             $table->timestamps();
         });
     }

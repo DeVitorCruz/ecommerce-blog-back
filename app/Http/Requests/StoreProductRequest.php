@@ -35,7 +35,7 @@ class StoreProductRequest extends FormRequest
             'variants.*.sku' => 'required|string|distinct|max:191|unique:product_variants,sku',
             'variants.*.price' => 'required|numeric|min:0.01',
             'variants.*.stock_quantity' => 'required|integer|min:0',
-            'variants.*.image_url' => 'nullable|url',
+            'variants.*.image_path' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
             'variants.*.attributes' => 'required|array',
             'variants.*.attributes.*.name' => 'required|string',
             'variants.*.attributes.*.value' => 'required|string',

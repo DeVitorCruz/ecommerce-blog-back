@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Seller;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Seller;
+use App\Models\Category;
+
 
 class Product extends Model
 {
@@ -16,6 +18,7 @@ class Product extends Model
      */
     protected $fillable = [
         'seller_id',
+		'category_id',
         'name',
         'slug',
         'description',
@@ -28,6 +31,14 @@ class Product extends Model
     {
         return $this->belongsTo(Seller::class);
     }
+
+	/**
+	 * Get the category that owns the product.
+	 */
+	public function category(): BelongsTo 
+	{
+		return $this->belongsTo(Category::class);
+	}
 
     /**
      * Get the variants for the product.

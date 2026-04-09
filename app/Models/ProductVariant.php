@@ -22,7 +22,7 @@ class ProductVariant extends Model
         'sku',
         'price',
         'stock_quantity',
-        'image_url',
+        'image_path',
     ];
 
     /**
