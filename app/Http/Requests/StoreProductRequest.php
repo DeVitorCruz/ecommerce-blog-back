@@ -31,6 +31,7 @@ class StoreProductRequest extends FormRequest
                 Rule::unique('products', 'slug')->ignore($this->product)
             ],
             'description' => 'nullable|string',
+			'category_id' => 'nullable|exists:categories,id',
             'variants' => 'required|array',
             'variants.*.sku' => 'required|string|distinct|max:191|unique:product_variants,sku',
             'variants.*.price' => 'required|numeric|min:0.01',

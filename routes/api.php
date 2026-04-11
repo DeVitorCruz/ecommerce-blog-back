@@ -1,49 +1,54 @@
 <?php
+ use App\Http\Controllers\AuthController;
+ use App\Http\Controllers\Api\SellerController;
+ use App\Http\Controllers\Api\SellerProductController;
+ use App\Http\Controllers\Api\CategoryController;
+ use App\Http\Controllers\Api\ProductController;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\AuthController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\SellerController;
-use App\Http\Controllers\Api\SellerProductController;
-use App\Http\Controllers\Api\CategoryController;
+ // --------- Auth (public) ---------------------------
+ Route::post('/register', [AuthController::class, 'register'])
+     ->middleware(['guest:'.config('fortify.guard')])
+     ->name('api.register');
 
-// -------- Auth (public) --------------------
+ Route::post('/login', [AuthController::class, 'login'])
+     ->middleware(['guest:'.config('fortify.guard')])
+     ->name('api.login');
 
-Route::post('/register', [AuthController::class, 'register'])
-    ->middleware(['guest:' . config('fortify.guard')])
-    ->name('api.register');
+ Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+     ->middleware(['guest:'.config('fortify.guard')])
+     ->name('api.forgotPassword');
 
-Route::post('/login', [AuthController::class, 'login'])
-    ->middleware(['guest:' . config('fortify.guard')])
-    ->name('api.login');
+ Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+     ->middleware(['guest:'.config('fortify.guard')])
+     ->name('api.resetPassword');
 
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
-    ->middleware(['guest:' . config('fortify.guard')])
-    ->name('api.forgotPassword');
+ // ------ Categories (public) -----------------------------
+ Route::get('/categories', [CategoryController::class, 'index']);
+ Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
-Route::post('/reset-password', [AuthController::class, 'resetPassword'])
-    ->middleware(['guest:' . config('fortify.guard')])
-    ->name('api.resetPassword');
-    
-// ---- Categories (public) ------------------------
-Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('/categories/{category}', [CategoryController::class, 'show']);
+ // ------ Products (public) -------------------------------
+ Route::get('/products', [ProductController::class, 'index']);
+ Route::get('/products/{product}', [ProductController::class, 'show']);
 
-// ---- Authenticated routes --------------------
-Route::middleware('auth:sanctum')->group(function () {
+ // ------ Authencticated routes ---------------------------
+ Route::middleware('auth:sanctum')->group(function () {
+  
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('api.logout');
-	
-	// Seller
+
+    // Seller
     Route::post('/seller/onboard', [SellerController::class, 'store']);
-	
-	// Products
+
+    // Products
     Route::post('/products/add', [SellerProductController::class, 'store']);
-    
-    // Categories - suggest (authenticated users only)
+    Route::get('/seller/products', [ProductController::class, 'sellerProducts']);
+
+    // Categories
     Route::post('/categories', [CategoryController::class, 'store']);
-});
+}); 

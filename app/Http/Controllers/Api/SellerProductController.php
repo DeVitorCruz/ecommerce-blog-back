@@ -1,40 +1,44 @@
 <?php
+  namespace App\Http\Controllers\Api;
 
-namespace App\Http\Controllers\Api;
+  use App\Http\Controllers\Controller;
+  use App\Http\Requests\StoreProductRequest;
+  use App\Http\Resources\ProductResource;
+  use App\Models\Product;
+  use App\Models\Attribute;
+  use App\Models\AttributeValue;
+  use Illuminate\Http\JsonResponse;
+  use Illuminate\Support\Facades\DB;
+  use Illuminate\Support\Facades\Storage;
+  use Illuminate\Support\Str;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreProductRequest;
-use App\Models\Product;
-use App\Models\Attribute;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use App\Http\Resources\ProductResource;
-use App\Models\AttributeValue;
+  class SellerProductController extends Controller
+  {
+      public function store(StoreProductRequest $request): JsonResponse
+      {
+         try {
+             DB::beginTransaction();
 
-class SellerProductController extends Controller
-{
-    /**
-     * Store a newly created product.
-     */
-    public function store(StoreProductRequest $request): JsonResponse
-    {
-        try {
-            DB::beginTransaction();
+             $product = Product::create([
+                 'seller_id' => $request->user()->seller->id,
+                 'category_id' => $request->validated('category_id'),
+                 'name' => $request->validated('name'),
+                 'slug' => Str::slug($request->validated('slug') ?? $request->validated('name')),
+                 'description' => $request->validated('description'),
+             ]);
 
-            $product = Product::create([
-                'seller_id' => $request->user()->seller->id,
-                'name' => $request->validated('name'),
-                'slug' => Str::slug($request->validated('slug') ?? $request->validated('name')),
-                'description' => $request->validated('description'),
-            ]);
+             foreach ($request->validated('variants') as $index => $variantData) {
+                $imagePath = null;
+                if ($request->hasFile("variants.$index.image_path")) {
+                    $imagePath = $request->file("variants.$index.image_path")
+                        ->store('products', 'public');
+                }
 
-            foreach ($request->validated('variants') as $variantData) {
                 $variant = $product->variants()->create([
                     'sku' => $variantData['sku'],
                     'price' => $variantData['price'],
                     'stock_quantity' => $variantData['stock_quantity'],
-                    'image_url' => $variantData['image_url'],
+                    'image_path' => $imagePath,
                 ]);
 
                 foreach ($variantData['attributes'] as $attributeData) {
@@ -49,23 +53,24 @@ class SellerProductController extends Controller
 
                     $variant->attributeValues()->attach($attributeValue->id);
                 }
-            }
+             }
 
-            DB::commit();
+             DB::commit();
 
-            $productResource = new ProductResource($product->load('variants.attributeValues.attribute'));
+             $product->load('variants.attributeValues.attribute', 'category', 'seller');
 
-            return response()->json([
+             return response()->json([
                 'message' => 'Product created successfully.',
-                'product' => $productResource,
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
+                'product' => new ProductResource($product),
+             ], 201);
 
-            return response()->json([
-                'message' => 'Failed to create product.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-}
+          } catch (\Exception $e) {
+              DB::rollBack();
+ 
+              return response()->json([
+                  'message' => 'Failed to create product.',
+                  'error' => $e->getMessage(),
+              ], 500);
+          }
+      }
+ }
