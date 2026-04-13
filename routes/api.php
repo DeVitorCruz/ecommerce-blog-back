@@ -1,4 +1,18 @@
 <?php
+ /**
+  * API Routes - ecommerce-blog-back
+  * 
+  * Route groups:
+  *  - Public Auth       : register, login, password reset
+  *  - public Browse     : categories tree, product listing and search
+  *  - Authenticated     : user profile, logout, seller onboarding,
+  *                        product CRUD, category suggestions
+  *  - Admin (role=admin): category and seller approval/rejection
+  * 
+  * Authentication: Laravel Sanctum (Bearer token)
+  * Authorization: Spatie Laravel Permission (roles + middleware)
+  */
+	
  use App\Http\Controllers\AuthController;
  use App\Http\Controllers\Api\SellerController;
  use App\Http\Controllers\Api\SellerProductController;
@@ -7,7 +21,7 @@
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
- // --------- Auth (public) ---------------------------
+ // --------- Public: Authentication ---------------------------
  Route::post('/register', [AuthController::class, 'register'])
      ->middleware(['guest:'.config('fortify.guard')])
      ->name('api.register');
@@ -47,8 +61,24 @@
 
     // Products
     Route::post('/products/add', [SellerProductController::class, 'store']);
+    Route::patch('/products/{product}', [SellerProductController::class, 'update']);
+    Route::delete('/products/{product}', [SellerProductController::class, 'destroy']);
     Route::get('/seller/products', [ProductController::class, 'sellerProducts']);
 
     // Categories
     Route::post('/categories', [CategoryController::class, 'store']);
+    
+    // --- Admin routes ------------------------
+    Route::middleware('admin')->prefix('admin')->group(function () {
+		
+		// Category approval
+		Route::get('/categories/pending', [App\Http\Controllers\Api\Admin\CategoryApprovalController::class, 'index']);
+		Route::patch('/categories/{category}/approve', [App\Http\Controllers\Api\Admin\CategoryApprovalController::class, 'approve']);
+		Route::patch('/categories/{category}/reject', [App\Http\Controllers\Api\Admin\CategoryApprovalController::class, 'reject']);
+		
+		// Seller approval
+		Route::get('/sellers/pending', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'index']);
+		Route::patch('/sellers/{seller}/approve', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'approve']);
+		Route::patch('/sellers/{seller}/reject', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'reject']);
+	});
 }); 
