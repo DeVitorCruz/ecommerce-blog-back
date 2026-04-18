@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -78,4 +79,27 @@ class User extends Authenticatable
     {
         return $this->hasOne(Seller::class);
     }
+    
+    /**
+     * Get the shopping cart associated with the user.
+     * 
+     * Each user has at most one active cart.
+     * Guest carts are merged into this cart on login.
+     * 
+     * @return HasOne<Cart>
+     */
+    public function cart(): HasOne
+    {
+		return $this->hasOne(Cart::class); 
+	}
+	
+	/**
+	 * Get all orders placed by the user.
+	 * 
+	 * @return HasMany<Order>
+	 */
+	public function orders(): HasMany
+	{
+		return $this->hasMany(Order::class);
+	}
 }

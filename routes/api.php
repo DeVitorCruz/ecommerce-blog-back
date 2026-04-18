@@ -18,6 +18,8 @@
  use App\Http\Controllers\Api\SellerProductController;
  use App\Http\Controllers\Api\CategoryController;
  use App\Http\Controllers\Api\ProductController;
+ use App\Http\Controllers\Api\CartController;
+ use App\Http\Controllers\Api\OrderController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -81,4 +83,18 @@
 		Route::patch('/sellers/{seller}/approve', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'approve']);
 		Route::patch('/sellers/{seller}/reject', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'reject']);
 	});
+	
+	// Cart 
+	Route::get('/cart', [CartController::class, 'show']);
+	Route::post('/cart/items', [CartController::class, 'addItem']);
+	Route::patch('/cart/items/{item}', [CartController::class, 'updateItem']);
+	Route::delete('/cart/items/{item}', [CartController::class, 'removeItem']);
+	Route::delete('/cart', [CartController::class, 'clear']);
+	Route::post('/cart/merge', [CartController::class, 'mergeGuestCart']);
+	
+	// Orders
+	Route::get('/orders', [OrderController::class, 'index']);
+	Route::post('/orders', [OrderController::class, 'store']);
+	Route::get('/orders/{order}', [OrderController::class, 'show']);
+	Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel']);	
 }); 
