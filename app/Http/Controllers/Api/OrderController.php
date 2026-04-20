@@ -199,7 +199,7 @@ class OrderController extends Controller
 				}
 			}
 			
-			$order->updatedStatus('cancelled', $request->user()->id, 'Cancelled by buyer.');
+			$order->updateStatus('cancelled', $request->user()->id, 'Cancelled by buyer.');
 			
 			DB::commit();
 			

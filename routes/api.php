@@ -20,6 +20,7 @@
  use App\Http\Controllers\Api\ProductController;
  use App\Http\Controllers\Api\CartController;
  use App\Http\Controllers\Api\OrderController;
+ use App\Http\Controllers\Api\Admin\OrderStatusController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -82,6 +83,10 @@
 		Route::get('/sellers/pending', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'index']);
 		Route::patch('/sellers/{seller}/approve', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'approve']);
 		Route::patch('/sellers/{seller}/reject', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'reject']);
+		
+		// Order management
+		Route::get('/orders', [OrderStatusController::class, 'index']);
+		Route::patch('/orders/{order}/status', [OrderStatusController::class, 'updateStatus']);
 	});
 	
 	// Cart 

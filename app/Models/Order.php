@@ -43,7 +43,7 @@ class Order extends Model
     ];
     
     /** Available order statuses */
-    const STATUSE = [
+    const STATUSES = [
 		 'pending', 
 		 'paid', 
 		 'processing',
@@ -91,9 +91,9 @@ class Order extends Model
 	 * @param string|null $comment Optional comment about the change.
 	 * @return void
 	 */
-	public function updatedStatus(string $status, ?int $changedBy = null, ?string $comment = null): void 
+	public function updateStatus(string $status, ?int $changedBy = null, ?string $comment = null): void 
 	{
-		$this->updated(['status' => $status]);
+		$this->update(['status' => $status]);
 		
 		$this->statusHistory()->create([
 			'status' => $status,

@@ -32,7 +32,7 @@ class StoreOrderRequest extends FormRequest
             'shipping_address.state' => 'required|string|max:191',
             'shipping_address.postal_code' => 'required|string|max:20',
             'shipping_address.country' => 'required|string|max:191',
-            'notes' => 'required|string|max:500',
+            'notes' => 'nullable|string|max:500|sometimes',
         ];
     }
 }
