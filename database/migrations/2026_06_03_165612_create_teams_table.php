@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('seller_id')->constrained('sellers')->onDelete('cascade');
+            // Who owns/created this team
+            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete(); // null = platform-level team | set = store-level team
+            $table->foreignId('seller_id')->nullable()->constrained('sellers')->nullOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('teams');
     }
 };
