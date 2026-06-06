@@ -34,7 +34,11 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        if (config('fortify.features.emailVerification')) {
+         // Assign default customer role on registration
+        $user->assignRole('customer');
+
+        if (config('fortify.features.emailVerification'))
+        {
             event(new Registered($user));
         }
 
