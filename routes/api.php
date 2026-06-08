@@ -21,6 +21,7 @@
  use App\Http\Controllers\Api\CartController;
  use App\Http\Controllers\Api\OrderController;
  use App\Http\Controllers\Api\Admin\OrderStatusController;
+ use App\Http\Controllers\Api\UserProfileController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -58,6 +59,10 @@
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('api.logout');
+
+    Route::get('/profile', [UserProfileController::class, 'show']);
+
+    Route::put('/profile', [UserProfileController::class, 'update']);
 
     // Seller
     Route::post('/seller/onboard', [SellerController::class, 'store']);
