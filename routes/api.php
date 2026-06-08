@@ -61,11 +61,12 @@
         ->name('api.logout');
 
     Route::get('/profile', [UserProfileController::class, 'show']);
-
     Route::put('/profile', [UserProfileController::class, 'update']);
 
     // Seller
+    Route::get('/seller/profile', [SellerController::class, 'show']);
     Route::post('/seller/onboard', [SellerController::class, 'store']);
+    Route::patch('/seller/profile', [SellerController::class, 'update']);
 
     // Products
     Route::post('/products/add', [SellerProductController::class, 'store']);
@@ -88,7 +89,8 @@
 		Route::get('/sellers/pending', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'index']);
 		Route::patch('/sellers/{seller}/approve', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'approve']);
 		Route::patch('/sellers/{seller}/reject', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'reject']);
-		
+		Route::patch('/sellers/{seller}/suspend', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'suspend']);
+
 		// Order management
 		Route::get('/orders', [OrderStatusController::class, 'index']);
 		Route::patch('/orders/{order}/status', [OrderStatusController::class, 'updateStatus']);

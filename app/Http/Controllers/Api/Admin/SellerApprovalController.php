@@ -9,17 +9,13 @@
  /**
   * Handles admin approval and rejection of seller onboarding requests.
   * 
-  * All endpoints require authentication and the 'admin' role via
-  * the EnsureUserIsAdmin middleware applied at the route level.
+  * All endpoints require authentication and the 'admin/owner' role.
   */
  class SellerApprovalController extends Controller
  {
     /**
-     * List all seller profiles pending admin review.
-     * 
-     * Returns sellers in ascending order of submission date
-     * so the oldest request are reviewed first (FIFO).
-     * 
+     * List all seller profiles pending admin review (FIFO).
+     *  
      * @return JsonResponse 200 with a collection of pending SellerResource.
      */
     public function index(): JsonResponse
@@ -35,12 +31,8 @@
     }
 
     /**
-     * Approve a pending seller onboarding request.
-     * 
-     * Sets the seller status to 'approved', allowing them to list
-     * products on the marketplace.
-     * Only sellers with 'pending' status can be approved.
-     * 
+     * Approve a pending - sets status to 'active' and assigns seller role.
+     *  
      * @param Seller $seller The seller to approve (route model binding).	
      * @return JsonResponse 200 with updated SellerResource,
      *                      422 if the seller is not in pending state.
@@ -49,25 +41,24 @@
     {
         if ($seller->status !== 'pending') {
             return response()->json([
-                'message' => 'Seller is not pending approval.',
+                'message' => 'Only pending sellers can be approved.',
             ], 422);
         }
 
-        $seller->update(['status' => 'approved']);
+        $seller->update(['status' => 'active']);
+
+        // Assign seller role to the user
+        $seller->user->assignRole('seller');
 
         return response()->json([
             'message' => 'Seller approved successfully.',
-            'seller' => new SellerResource($seller),
+            'seller' => new SellerResource($seller->fresh('user')),
         ]);
     }
 
     /**
-     * Reject a pending seller onboarding request.
-     * 
-     * Sets the seller status to 'rejected', preventing them from
-     * listing products on the marketplace.
-     * Only sellers with 'pending' status can be rejected.
-     * 
+     * Reject a pending seller - stores rejection reason.
+     *
      * @param Seller $seller The seller to reject (route model binding).
      * @return JsonResponse 200 with updated SellerResource,
      *                      422 if the seller is not in pending state.
@@ -76,15 +67,56 @@
     {
         if ($seller->status !== 'pending') {
             return response()->json([
-                'message' => 'Seller is not pending approval.',
+                'message' => 'Only pending sellers can be rejected.',
             ], 422);
         }
 
-        $seller->update(['status' => 'rejected']);
+        $data = $request->validate([
+            'rejection_reason' => 'nullable|string|max:500',
+        ]);
+
+        $seller->update([
+            'status' => 'rejected',
+            'rejection_reason' => $data['rejection_reason']?? null,
+        ]);
 
         return response()->json([
             'message' => 'Seller rejected.',
-            'seller' => new SellerResource($seller),
+            'seller' => new SellerResource($seller->fresh('user')),
+        ]);
+    }
+
+    /**
+     * Suspend an active seller.
+     * 
+     * @param Request $request seller to suspender.
+     * @param Seller  $seller  The seller to match.
+     * @return JsonResponse 200 with updated SellerResource,
+     *                      422 if the seller is not active state. 
+     */
+    public function suspend(Request $request, Seller $seller) : JsonResponse
+    {
+        if ($seller->status !== 'active') {
+            return response()->json([
+                'message' => 'Only active sellers can be suspended.',
+            ], 422);
+        }
+
+        $data = $request->validate([
+            'rejection_reason' => 'nullable|string|max:500',
+        ]);
+
+        $seller->update([
+            'status' => 'suspended',
+            'rejection_reason' => $data['rejection_reason']?? null,
+        ]);
+
+        // Remove seller role while suspended
+        $seller->user->removeRole('seller');
+
+        return response()->json([
+            'message' => 'Seller suspended.',
+            'seller' => new SellerResource($seller->fresh('user')),            
         ]);
     }
 }
