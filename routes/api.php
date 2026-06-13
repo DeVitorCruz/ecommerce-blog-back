@@ -20,6 +20,9 @@
  use App\Http\Controllers\Api\ProductController;
  use App\Http\Controllers\Api\CartController;
  use App\Http\Controllers\Api\OrderController;
+ use App\Http\Controllers\Api\FAQController;
+ use App\Http\Controllers\Api\BlogController;
+ use App\Http\Controllers\Api\ContactController;
  use App\Http\Controllers\Api\Admin\OrderStatusController;
  use App\Http\Controllers\Api\UserProfileController;
  use Illuminate\Http\Request;
@@ -50,6 +53,17 @@
  Route::get('/products', [ProductController::class, 'index']);
  Route::get('/products/{product}', [ProductController::class, 'show']);
 
+ // ------- Blog (public) -----------------------------
+ Route::get('/blogs', [BlogController::class, 'index']);
+ Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+
+ // ------- FAQ (public) -----------------------------
+ Route::get('/faqs', [FAQController::class, 'index']);
+
+ // ------- Contact (public + guest) -----------------------------
+ Route::post('/contacts', [ContactController::class, 'store'])
+    ->middleware('auth:sanctum')->withoutMiddleware('auth:sanctum');
+     
  // ------ Authencticated routes ---------------------------
  Route::middleware('auth:sanctum')->group(function () {
   
@@ -62,6 +76,11 @@
 
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::put('/profile', [UserProfileController::class, 'update']);
+
+    // Blog (write)
+    Route::post('/blogs', [BlogController::class, 'store']);
+    Route::patch('/blogs/{blog}', [BlogController::class, 'update']);
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy']);
 
     // Seller
     Route::get('/seller/profile', [SellerController::class, 'show']);
@@ -90,6 +109,20 @@
 		Route::patch('/sellers/{seller}/approve', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'approve']);
 		Route::patch('/sellers/{seller}/reject', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'reject']);
 		Route::patch('/sellers/{seller}/suspend', [App\Http\Controllers\Api\Admin\SellerApprovalController::class, 'suspend']);
+
+        // Blog admin
+        Route::get('/blogs', [BlogController::class, 'adminIndex']);
+        
+        // FAQ management
+        Route::post('/faqs', [FAQController::class, 'store']);
+        Route::patch('/faqs/{faq}', [FAQController::class, 'update']);
+        Route::delete('/faqs/{faq}', [FAQController::class, 'destroy']);
+
+        // Contact management
+        Route::get('/contacts', [ContactController::class, 'index']);
+        Route::get('/contacts/{contact}', [ContactController::class, 'show']);
+        Route::patch('/contacts/{contact}', [ContactController::class, 'update']);
+        Route::delete('/contacts/{contact}', [ContactController::class, 'destroy']);
 
 		// Order management
 		Route::get('/orders', [OrderStatusController::class, 'index']);
