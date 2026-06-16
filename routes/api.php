@@ -25,6 +25,7 @@
  use App\Http\Controllers\Api\ContactController;
  use App\Http\Controllers\Api\Admin\OrderStatusController;
  use App\Http\Controllers\Api\UserProfileController;
+ use App\Http\Controllers\Api\EmploymentController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -129,6 +130,13 @@
 		Route::patch('/orders/{order}/status', [OrderStatusController::class, 'updateStatus']);
 	});
 	
+    // Employment
+    Route::get('/employments', [EmploymentController::class, 'index']);
+    Route::post('/employments', [EmploymentController::class, 'store']);
+    Route::get('/employments/{employment}', [EmploymentController::class, 'show']);
+    Route::patch('/employments/{employment}/suspend', [EmploymentController::class, 'suspend']);
+    Route::delete('/employments/{employment}', [EmploymentController::class, 'destroy']);
+
 	// Cart 
 	Route::get('/cart', [CartController::class, 'show']);
 	Route::post('/cart/items', [CartController::class, 'addItem']);
