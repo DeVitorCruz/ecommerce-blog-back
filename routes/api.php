@@ -26,6 +26,7 @@
  use App\Http\Controllers\Api\Admin\OrderStatusController;
  use App\Http\Controllers\Api\UserProfileController;
  use App\Http\Controllers\Api\EmploymentController;
+ use App\Http\Controllers\Api\TeamController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -130,6 +131,16 @@
 		Route::patch('/orders/{order}/status', [OrderStatusController::class, 'updateStatus']);
 	});
 	
+    // Teams
+
+    Route::get('/teams', [TeamController::class, 'index']);
+    Route::post('/teams', [TeamController::class, 'store']);
+    Route::get('/teams/{team}', [TeamController::class, 'show']);
+    Route::patch('/teams/{team}', [TeamController::class, 'update']);
+    Route::delete('/teams/{team}', [TeamController::class, 'destroy']);
+    Route::post('/teams/{team}/members', [TeamController::class, 'addMember']);
+    Route::delete('/teams/{team}/members/{user}', [TeamController::class, 'removeMember']);
+
     // Employment
     Route::get('/employments', [EmploymentController::class, 'index']);
     Route::post('/employments', [EmploymentController::class, 'store']);
