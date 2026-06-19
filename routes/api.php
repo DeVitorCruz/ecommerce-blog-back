@@ -28,6 +28,7 @@
  use App\Http\Controllers\Api\EmploymentController;
  use App\Http\Controllers\Api\TeamController;
  use App\Http\Controllers\Api\WishlistController;
+ use App\Http\Controllers\Api\StaffSpotlightController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,9 @@
  Route::post('/contacts', [ContactController::class, 'store'])
     ->middleware('auth:sanctum')->withoutMiddleware('auth:sanctum');
      
+ // ------ Staff Spotlights (public about page) ---------------------------
+ Route::get('/spotlights', [StaffSpotlightController::class, 'index']);
+
  // ------ Authencticated routes ---------------------------
  Route::middleware('auth:sanctum')->group(function () {
   
@@ -126,6 +130,12 @@
         Route::get('/contacts/{contact}', [ContactController::class, 'show']);
         Route::patch('/contacts/{contact}', [ContactController::class, 'update']);
         Route::delete('/contacts/{contact}', [ContactController::class, 'destroy']);
+
+        // Staff Spotlights management
+        Route::get('/spotlights', [StaffSpotlightController::class, 'adminIndex']);
+        Route::post('/spotlights', [StaffSpotlightController::class, 'store']);
+        Route::patch('/spotlights/{spotlight}', [StaffSpotlightController::class, 'update']);
+        Route::delete('/spotlights/{spotlight}', [StaffSpotlightController::class, 'destroy']);
 
 		// Order management
 		Route::get('/orders', [OrderStatusController::class, 'index']);
