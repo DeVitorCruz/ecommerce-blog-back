@@ -27,6 +27,7 @@
  use App\Http\Controllers\Api\UserProfileController;
  use App\Http\Controllers\Api\EmploymentController;
  use App\Http\Controllers\Api\TeamController;
+ use App\Http\Controllers\Api\WishlistController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -131,8 +132,13 @@
 		Route::patch('/orders/{order}/status', [OrderStatusController::class, 'updateStatus']);
 	});
 	
-    // Teams
+    // Wishlist (registered users only - no guest wishlist)
+    Route::get('/wishlist', [WishlistController::class, 'index']);
+    Route::post('/wishlist/{productId}', [WishlistController::class, 'add']);
+    Route::delete('/wishlist/clear', [WishlistController::class, 'clear']);
+    Route::delete('/wishlist/{productId}', [WishlistController::class, 'remove']);
 
+    // Teams
     Route::get('/teams', [TeamController::class, 'index']);
     Route::post('/teams', [TeamController::class, 'store']);
     Route::get('/teams/{team}', [TeamController::class, 'show']);
