@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use App\Models\Seller;
 use App\Models\Category;
 
@@ -26,6 +27,8 @@ class Product extends Model
 
     /**
      * Get the seller that owns the product.
+     * 
+     * @return BelongsTo<Seller>
      */
     public function seller(): BelongsTo
     {
@@ -34,6 +37,8 @@ class Product extends Model
 
 	/**
 	 * Get the category that owns the product.
+     * 
+     * @return BelongsTo<Category>
 	 */
 	public function category(): BelongsTo 
 	{
@@ -42,9 +47,32 @@ class Product extends Model
 
     /**
      * Get the variants for the product.
+     * 
+     * @return HasMany<ProductVariant>
      */
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
     }
+
+    /**
+     * Retrieve the reviews for this product
+     * 
+     * @return MorphMany<Review>
+     */
+    public function reviews(): MorphMany 
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+
+    /**
+     * Retrieve only the approved reviews 
+     * 
+     * @return MorphMany<Review>
+     */
+    public function approvedReviews(): MorphMany
+    {
+        return $this->morphMany(Review::class, 'reviewable')
+            ->where('status', 'approved');
+    } 
 }

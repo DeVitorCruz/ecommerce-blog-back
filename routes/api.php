@@ -29,6 +29,7 @@
  use App\Http\Controllers\Api\TeamController;
  use App\Http\Controllers\Api\WishlistController;
  use App\Http\Controllers\Api\StaffSpotlightController;
+ use App\Http\Controllers\Api\ReviewController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -70,6 +71,10 @@
      
  // ------ Staff Spotlights (public about page) ---------------------------
  Route::get('/spotlights', [StaffSpotlightController::class, 'index']);
+
+ // ------ Reviews (public) ---------------------------
+ Route::get('/products/{product}/reviews', [ReviewController::class, 'productReviews']);
+ Route::get('/sellers/{seller}/reviews', [ReviewController::class, 'sellerReviews']);
 
  // ------ Authencticated routes ---------------------------
  Route::middleware('auth:sanctum')->group(function () {
@@ -140,6 +145,12 @@
 		// Order management
 		Route::get('/orders', [OrderStatusController::class, 'index']);
 		Route::patch('/orders/{order}/status', [OrderStatusController::class, 'updateStatus']);
+
+        // Reviews moderation
+        Route::get('/reviews', [ReviewController::class, 'adminIndex']);
+        Route::patch('/reviews/{review}/approve', [ReviewController::class, 'approve']);
+        Route::patch('/reviews/{review}/reject', [ReviewController::class, 'reject']);
+        Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
 	});
 	
     // Wishlist (registered users only - no guest wishlist)
@@ -177,4 +188,9 @@
 	Route::post('/orders', [OrderController::class, 'store']);
 	Route::get('/orders/{order}', [OrderController::class, 'show']);
 	Route::patch('/orders/{order}/cancel', [OrderController::class, 'cancel']);	
+
+    // Reviews (submit)
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'storeProductReview']);
+    Route::post('/sellers/{seller}/reviews', [ReviewController::class, 'storeSellerReview']);
+    Route::patch('/reviews/{review}', [ReviewController::class, 'update']);
 }); 

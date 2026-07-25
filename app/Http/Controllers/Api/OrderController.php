@@ -50,7 +50,7 @@ class OrderController extends Controller
 	 * 
 	 * All steps run in a single DB transaction for data integrity.
 	 * 
-	 * @param StoreOrderRequest $request
+	 * @param  StoreOrderRequest $request
 	 * @return JsonResponse
 	 */
 	public function store(StoreOrderRequest $request): JsonResponse

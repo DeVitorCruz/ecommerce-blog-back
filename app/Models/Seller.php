@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * Seller store profile - extends a User with store capabilities.
@@ -96,18 +97,54 @@ class Seller extends Model
         return $this->hasMany(Employment::class);
     }
 
+    /**
+     * Check if the status of the store is active
+     * 
+     * @return bool
+     */
     public function isActive(): bool
     {
         return $this->status === 'active';
     }
 
+    /**
+     * Check if the status of the store is pending
+     * 
+     * @return bool
+     */
     public function isPending(): bool 
     {
         return $this->status === 'pending';        
     }
 
+    /**
+     * Check if the status of the store is suspended
+     * 
+     * @return bool
+     */
     public function isSuspended(): bool
     {
         return $this->status === 'suspended';
+    }
+
+    /**
+     * Retrieve the reviews for this Store
+     * 
+     * @return MorphMany<Review>
+     */
+    public function reviews(): MorphMany 
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+
+    /**
+     * Retrieve only the approved for this Store 
+     * 
+     * @return MorphMany<Review>
+     */
+    public function approvedReviews(): MorphMany
+    {
+        return $this->morphMany(Review::class, 'reviewable')
+            ->where('status', 'approved');
     }
 }
