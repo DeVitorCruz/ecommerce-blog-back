@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Represents a buyer's order.
@@ -34,6 +35,8 @@ class Order extends Model
 		'status',
 		'total_amount',
 		'shipping_address',
+		'recipient_name',
+		'recipient_phone',
 		'notes'
     ];
     
@@ -44,13 +47,13 @@ class Order extends Model
     
     /** Available order statuses */
     const STATUSES = [
-		 'pending', 
-		 'paid', 
-		 'processing',
-		 'shipped',
-		 'delivered', 
-		 'cancelled', 
-		 'refunded',
+		'pending', 
+		'paid', 
+		'processing',
+		'shipped',
+		'delivered', 
+		'cancelled', 
+		'refunded',
     ];
     
     /**
@@ -100,5 +103,25 @@ class Order extends Model
 			'changed_by' => $changedBy,
 			'comment' => $comment,
 		]);
+	}
+
+	/**
+	 * Get orders by the payment
+	 * 
+	 * @return HasOne<Payment>
+	 */
+	public function payment(): HasOne 
+	{
+		return $this->hasOne(Payment::class);
+	}
+
+	/**
+	 * Get orders by the refund
+	 * 
+	 * @return HasOne<Refund>
+	 */
+	public function refund(): HasOne 
+	{
+		return $this->hasOne(Refund::class);
 	}
 }

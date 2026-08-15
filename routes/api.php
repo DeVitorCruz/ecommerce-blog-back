@@ -30,6 +30,9 @@
  use App\Http\Controllers\Api\WishlistController;
  use App\Http\Controllers\Api\StaffSpotlightController;
  use App\Http\Controllers\Api\ReviewController;
+ use App\Http\Controllers\Api\CheckoutController;
+ use App\Http\Controllers\Api\WebhookController;
+ use App\Http\Controllers\Api\RefundController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -75,6 +78,13 @@
  // ------ Reviews (public) ---------------------------
  Route::get('/products/{product}/reviews', [ReviewController::class, 'productReviews']);
  Route::get('/sellers/{seller}/reviews', [ReviewController::class, 'sellerReviews']);
+
+ // --- Webhooks (no auth — gateway callbacks) -------------------------------------
+ Route::post('/webhooks/mercadopago', [WebhookController::class, 'mercadopago'])
+    ->name('webhooks.mercadopago');
+
+ Route::post('/webhooks/pagseguro', [WebhookController::class, 'pagseguro'])
+    ->name('webhooks.pagseguro');
 
  // ------ Authencticated routes ---------------------------
  Route::middleware('auth:sanctum')->group(function () {
@@ -151,6 +161,13 @@
         Route::patch('/reviews/{review}/approve', [ReviewController::class, 'approve']);
         Route::patch('/reviews/{review}/reject', [ReviewController::class, 'reject']);
         Route::delete('/reviews/{review}', [ReviewController::class, 'destroy']);
+
+        // Refunds
+        Route::get('/refunds', [RefundController::class, 'index']);
+        Route::post('/refunds', [RefundController::class, 'store']);
+        Route::get('/refunds/{refund}', [RefundController::class, 'show']);
+        Route::patch('/refunds/{refund}/approve', [RefundController::class, 'approve']);
+        Route::patch('/refunds/{refund}/reject', [RefundController::class, 'reject']);
 	});
 	
     // Wishlist (registered users only - no guest wishlist)
@@ -193,4 +210,9 @@
     Route::post('/products/{product}/reviews', [ReviewController::class, 'storeProductReview']);
     Route::post('/sellers/{seller}/reviews', [ReviewController::class, 'storeSellerReview']);
     Route::patch('/reviews/{review}', [ReviewController::class, 'update']);
+
+    // Checkout
+    Route::get('/checkout/options', [CheckoutController::class, 'options']);
+    Route::post('/checkout', [CheckoutController::class, 'store']);
+    Route::get('/checkout/{order}', [CheckoutController::class, 'show']);
 }); 

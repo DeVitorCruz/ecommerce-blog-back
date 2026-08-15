@@ -15,17 +15,17 @@ return new class extends Migration
             $table->id();
             
             $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');
+                ->constrained('users')
+                ->onDelete('cascade');
             
             $table->enum('status', [
-				 'pending', // Order placed, awaiting payment
-				 'paid', // Payment confirmed
-				 'processing', // Seller is preparing the order
-				 'shipped', // Order dispatched
-				 'delivered', // Order received by buyer
-				 'cancelled', // Order cancelled
-				 'refunded', // Payment refunded
+                'pending', // Order placed, awaiting payment
+                'paid', // Payment confirmed
+                'processing', // Seller is preparing the order
+                'shipped', // Order dispatched
+                'delivered', // Order received by buyer
+                'cancelled', // Order cancelled
+                'refunded', // Payment refunded
             ])->default('pending');
             
             // Total amount at time of purchase
