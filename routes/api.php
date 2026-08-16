@@ -33,6 +33,7 @@
  use App\Http\Controllers\Api\CheckoutController;
  use App\Http\Controllers\Api\WebhookController;
  use App\Http\Controllers\Api\RefundController;
+ use App\Http\Controllers\Api\SocialAuthController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -85,6 +86,10 @@
 
  Route::post('/webhooks/pagseguro', [WebhookController::class, 'pagseguro'])
     ->name('webhooks.pagseguro');
+
+ // ------ Social login ------------------------------------
+ Route::get('/auth/social/{provider}', [SocialAuthController::class, 'redirect']);
+ Route::get('/auth/social/{provider}/callback', [SocialAuthController::class, 'callback']);
 
  // ------ Authencticated routes ---------------------------
  Route::middleware('auth:sanctum')->group(function () {
