@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('sellers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id'); // cross-DB → platform.users
             $table->string('store_name')->unique();
             $table->string('slug')->unique(); // url friendly
             $table->text('description')->nullable();

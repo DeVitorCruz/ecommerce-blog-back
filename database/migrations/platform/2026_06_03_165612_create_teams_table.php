@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             // Who owns/created this team
             $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete(); // null = platform-level team | set = store-level team
-            $table->foreignId('seller_id')->nullable()->constrained('sellers')->nullOnDelete();
+            $table->unsignedBigInteger('seller_id')->nullable();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();

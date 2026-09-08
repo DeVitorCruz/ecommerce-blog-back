@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->unsignedBigInteger('user_id')->nullable(); // cross-DB → platform.users
             $table->string('session_token')->nullable();
             $table->string('ip_address')->nullable();
             $table->string('name');

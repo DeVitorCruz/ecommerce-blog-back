@@ -15,10 +15,8 @@ return new class extends Migration
             $table->id();
             
 			// Nullable - null means guest cart
-			$table->foreignId('user_id')
-			      ->nullable()
-			      ->constrained('users')
-			      ->onDelete('cascade');
+			$table->unsignedBigInteger('user_id')
+			      ->nullable();
             
             // Identifies guest carts before login
             $table->string('session_id')->nullable()->index();

@@ -18,8 +18,8 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->text('reason');
             $table->string('status')->default('pending'); // pending|processed|rejected
-            $table->foreignId('requested_by')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('processed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('requested_by'); // cross-DB → platform.users
+            $table->unsignedBigInteger('processed_by')->nullable(); // cross-DB → platform.users
             $table->timestamp('processed_at')->nullable();
             $table->text('admin_notes')->nullable();
             $table->timestamps();

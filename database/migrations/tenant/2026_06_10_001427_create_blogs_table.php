@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('blogs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id'); // cross-DB → platform.users
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('excerpt')->nullable();

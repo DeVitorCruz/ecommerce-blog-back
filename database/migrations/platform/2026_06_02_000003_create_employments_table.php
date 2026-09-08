@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('employer_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('employee_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('seller_id')->nullable()->constrained('sellers')->nullOnDelete();
+            $table->unsignedBigInteger('seller_id')->nullable();
             $table->string('role_name');
             $table->timestamp('hired_at')->useCurrent();
             $table->timestamp('fired_at')->nullable();

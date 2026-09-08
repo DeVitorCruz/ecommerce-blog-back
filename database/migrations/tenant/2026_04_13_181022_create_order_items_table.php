@@ -26,10 +26,8 @@ return new class extends Migration
                   
                   
             // Keep reference to seller for marketplace attribution
-            $table->foreignId('seller_id')
-                  ->nullable()
-                  ->constrained('sellers')
-                  ->onDelete('set null');
+            $table->unsignedBigInteger('seller_id')
+                  ->nullable();
                   
              // Snapshot of product data at purchase time
              // Preserves history even if product is later edited/deleted

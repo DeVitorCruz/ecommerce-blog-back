@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id'); // cross-DB → platform.users
             $table->morphs('reviewable');
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->unsignedTinyInteger('rating');
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('shipping')->nullable();
             $table->unsignedTinyInteger('value')->nullable();
             $table->string('status')->default('pending');
-            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('approved_by')->nullable(); // cross-DB → platform.users
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
             $table->unique(['user_id', 'reviewable_type', 'reviewable_id'], 'unique_user_review');

@@ -32,10 +32,8 @@ return new class extends Migration
             $table->string('comment')->nullable();
             
             // Who changed the status (admin, seller or system)
-            $table->foreignId('changed_by')
-                  ->nullable()
-                  ->constrained('users')
-                  ->onDelete('set null');
+            $table->unsignedBigInteger('changed_by')
+                  ->nullable();
            
             // Only created_at needed - history is immutable
             $table->timestamp('created_at')->useCurrent();
