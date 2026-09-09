@@ -18,6 +18,7 @@
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         ]);
+        $middleware->append(\App\Http\Middleware\ResolveTenant::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
