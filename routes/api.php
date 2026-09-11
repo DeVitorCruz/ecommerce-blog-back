@@ -34,6 +34,11 @@
  use App\Http\Controllers\Api\WebhookController;
  use App\Http\Controllers\Api\RefundController;
  use App\Http\Controllers\Api\SocialAuthController;
+ use App\Http\Controllers\Api\Platform\PlanController;
+ use App\Http\Controllers\Api\Platform\TenantController;
+ use App\Http\Controllers\Api\Platform\AppController;
+ use App\Http\Controllers\Api\Platform\ThemeController;
+ use App\Http\Controllers\Api\Platform\DomainController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -90,6 +95,32 @@
  // ------ Social login ------------------------------------
  Route::get('/auth/social/{provider}', [SocialAuthController::class, 'redirect']);
  Route::get('/auth/social/{provider}/callback', [SocialAuthController::class, 'callback']);
+
+ // ------ Platform API ------------------------------------
+ // Public
+ Route::prefix('platform')->group(function () {
+    Route::get('plans', [PlanController::class, 'index']);
+    Route::get('plans/{plan}', [PlanController::class, 'show']);
+    Route::get('themes', [ThemeController::class, 'index']);
+
+    // Auth required
+    Route::middleware('auth:sanctum')->group(function () {
+        // Tenant management
+        Route::get('tenant', [TenantController::class, 'show']);
+        Route::post('tenant', [TenantController::class, 'store']);
+        Route::patch('tenant', [TenantController::class, 'update']);
+
+        // App management
+        Route::get('apps', [AppController::class, 'index']);
+        Route::post('apps', [AppController::class, 'store']);
+        Route::patch('apps/{tenantApp}/theme', [AppController::class, 'switchTheme']);
+
+        // Domain management
+        Route::post('apps/{tenantApp}/domains', [DomainController::class, 'store']);
+        Route::patch('apps/{tenantApp}/domains/{domain}/verify',[DomainController::class, 'verify']);
+        Route::delete('apps/{tenantApp}/domains/{domain}', [DomainController::class, 'destroy']);
+    });
+ });
 
  // ------ Authencticated routes ---------------------------
  Route::middleware('auth:sanctum')->group(function () {

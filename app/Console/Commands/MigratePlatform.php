@@ -29,10 +29,9 @@ class MigratePlatform extends Command
         $options = [
             '--database' => 'mercatura',
             '--path' => 'database/migrations/platform',
-            '--force' => true,
         ]; 
 
-        if ($this->option('seed')) {
+        if ($this->option('fresh')) {
             Artisan::call('migrate:fresh', $options, $this->output);
         } else {
             Artisan::call('migrate', $options, $this->output);

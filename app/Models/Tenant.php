@@ -47,7 +47,7 @@ class Tenant extends Model
      */
     public function subscription(): HasOne 
     {
-        return $this->hosOne(Subscription::class)->latestOfMany();
+        return $this->hasOne(Subscription::class)->latestOfMany();
     }
 
     /**

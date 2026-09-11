@@ -35,7 +35,6 @@ class MigrateTenant extends Command
         $options = [
             '--database' => 'tenant',
             '--path' => 'database/migrations/tenant',
-            '--force' => true,
         ];
 
         if ($this->option('fresh')) {
