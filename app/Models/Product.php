@@ -12,6 +12,8 @@ use App\Models\Category;
 
 class Product extends Model
 {
+    protected $connection = 'tenant';
+
     /**
      * The attribute that are mass assignable.
      * 

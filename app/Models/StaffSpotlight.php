@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class StaffSpotlight extends Model
 {
+    protected $connection = 'mercatura';
+
     protected $fillable = [
         'user_id',
         'name',

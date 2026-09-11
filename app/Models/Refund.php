@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Refund extends Model
 {
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'payment_id',
         'order_id',

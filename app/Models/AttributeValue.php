@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AttributeValue extends Model
 {
+    protected $connection = 'tenant';
+
     use HasFactory;
 
     /**

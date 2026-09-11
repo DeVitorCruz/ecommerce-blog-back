@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
  */
 class Blog extends Model
 {
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'user_id',
         'title',

@@ -8,6 +8,8 @@
 
  class Category extends Model
  {
+    protected $connection = 'tenant';
+
     use HasFactory;
 
     protected $fillable = [

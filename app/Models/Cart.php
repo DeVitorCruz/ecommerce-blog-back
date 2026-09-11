@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Cart extends Model
 {
+    protected $connection = 'tenant';
+
   use HasFactory;
   
   protected $fillable = [

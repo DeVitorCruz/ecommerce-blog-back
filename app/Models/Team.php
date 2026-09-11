@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Team extends Model
 {
+    protected $connection = 'mercatura';
+
     protected $fillable = [
         'owner_id',
         'seller_id',

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserProfile extends Model
 {
+    protected $connection = 'mercatura';
+
     /**
      * Extended user profile - personal info, address, social links.
      * 

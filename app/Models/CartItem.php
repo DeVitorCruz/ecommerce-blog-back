@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CartItem extends Model
 {
+    protected $connection = 'tenant';
+
     use HasFactory;
     
     protected $fillable = [

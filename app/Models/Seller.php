@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 class Seller extends Model
 {
+    protected $connection = 'tenant';
+
 
     use HasFactory;
 

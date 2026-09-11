@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Contact extends Model
 {
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'user_id',
         'session_token',

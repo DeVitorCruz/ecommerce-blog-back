@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attribute extends Model
 {
+    protected $connection = 'tenant';
+
     use HasFactory;
 
     /**

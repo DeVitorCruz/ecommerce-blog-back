@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Employment extends Model
 {
+    protected $connection = 'mercatura';
+
     protected $fillable = [
         'employer_id',
         'employee_id',

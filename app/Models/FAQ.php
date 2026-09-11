@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class FAQ extends Model
 {
+    protected $connection = 'tenant';
+
     protected $table = 'faqs';
 
     protected $fillable = [

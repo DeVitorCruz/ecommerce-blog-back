@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Payment extends Model
 {
+    protected $connection = 'tenant';
+
     protected $fillable = [
         'order_id',
         'gateway',

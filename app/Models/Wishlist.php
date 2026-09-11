@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Wishlist extends Model
 {
+    protected $connection = 'tenant';
+
     protected $fillable = ['user_id'];
 
     /**

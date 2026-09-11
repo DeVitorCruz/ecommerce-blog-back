@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TeamMember extends Model
 {
+    protected $connection = 'mercatura';
+
     protected $fillable = [
         'team_id',
         'user_id',

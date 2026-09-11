@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class Order extends Model
 {
+    protected $connection = 'tenant';
+
     use HasFactory;
     
     protected $fillable = [

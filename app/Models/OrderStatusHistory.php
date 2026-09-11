@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderStatusHistory extends Model
 {
+    protected $connection = 'tenant';
+
     // Disable updated_at - history records are immutable
     const UPDATED_AT = null;
 

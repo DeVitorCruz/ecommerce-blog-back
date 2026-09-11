@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductVariant extends Model
 {
+    protected $connection = 'tenant';
+
 
     use HasFactory;
 

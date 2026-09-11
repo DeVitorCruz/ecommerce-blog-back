@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WishlistItem extends Model
 {
+    protected $connection = 'tenant';
+
     protected $fillable = ['wishlist_id', 'product_id'];
 
     /**

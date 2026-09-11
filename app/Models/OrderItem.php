@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderItem extends Model
 {
+    protected $connection = 'tenant';
+
     use HasFactory;
     
     protected $fillable = [
