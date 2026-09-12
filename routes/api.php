@@ -39,6 +39,7 @@
  use App\Http\Controllers\Api\Platform\AppController;
  use App\Http\Controllers\Api\Platform\ThemeController;
  use App\Http\Controllers\Api\Platform\DomainController;
+ use App\Http\Controllers\Api\Platform\DashboardController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -119,6 +120,10 @@
         Route::post('apps/{tenantApp}/domains', [DomainController::class, 'store']);
         Route::patch('apps/{tenantApp}/domains/{domain}/verify',[DomainController::class, 'verify']);
         Route::delete('apps/{tenantApp}/domains/{domain}', [DomainController::class, 'destroy']);
+
+        // Dashboard
+        Route::get('dashboard', [DashboardController::class, 'index']);
+        Route::get('dashboard/app/{tenantApp}', [DashboardController::class, 'app']);
     });
  });
 
