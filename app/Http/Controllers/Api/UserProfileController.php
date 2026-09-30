@@ -60,13 +60,18 @@ class UserProfileController extends Controller
             'state' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',
             'country' => 'nullable|string|max:2',
-            'website' => 'nullabel|url|max:191',
-            'linkedin' => 'nullabel|url|max:191',
+            'website' => 'nullable|url|max:191',
+            'linkedin' => 'nullable|url|max:191',
             'twitter' => 'nullable|url|max:191',
             'instagram' => 'nullable|url|max:191',
         ]);
 
         $user = $request->user();
+
+        // Update user name if provided
+        if (isset($data['name'])) {
+            $user->update(['name' => $data['name']]);
+        }
 
         // Upate user name if provided
         if ($request->hasFile('avatar')) {
@@ -75,7 +80,6 @@ class UserProfileController extends Controller
         }
 
         // Remove user-only fields before upserting profile
-
         $profileData = collect($data)
             ->except(['name'])
             ->toArray();
