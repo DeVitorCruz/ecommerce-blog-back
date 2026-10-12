@@ -66,17 +66,19 @@
                     'image_path' => $imagePath,
                 ]);
 
-                foreach ($variantData['attributes'] as $attributeData) {
-                    $attribute = Attribute::firstOrCreate([
-                        'name' => $attributeData['name'],
-                    ]);
-
-                    $attributeValue = AttributeValue::firstOrCreate([
-                        'attribute_id' => $attribute->id,
-                        'value' => $attributeData['value'],
-                    ]);
-
-                    $variant->attributeValues()->attach($attributeValue->id);
+                if (!empty($variantData['attributes'])) {
+                    foreach ($variantData['attributes'] as $attributeData) {
+                        $attribute = Attribute::firstOrCreate([
+                            'name' => $attributeData['name'],
+                        ]);
+    
+                        $attributeValue = AttributeValue::firstOrCreate([
+                            'attribute_id' => $attribute->id,
+                            'value' => $attributeData['value'],
+                        ]);
+    
+                        $variant->attributeValues()->attach($attributeValue->id);
+                    }
                 }
              }
 

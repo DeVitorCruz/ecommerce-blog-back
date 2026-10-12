@@ -21,7 +21,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @property in          $id
  * @property string      $name
  * @property string      $email
- * @property string      $password
+ * @property string      $google_id
+ * @property string|null $facebook_id
+ * @property string|null $avatar_url
+ * @property string|null $password
  * @property string|null $remember_token
  * @property \Carbon\Carbon|null $email_verified_at
  * @property \Carbon\Carban $created_at

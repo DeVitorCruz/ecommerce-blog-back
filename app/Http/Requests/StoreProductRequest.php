@@ -31,15 +31,15 @@ class StoreProductRequest extends FormRequest
                 Rule::unique('products', 'slug')->ignore($this->product)
             ],
             'description' => 'nullable|string',
-			'category_id' => 'nullable|exists:categories,id',
+			'category_id' => 'nullable|exists:tenant.categories,id',
             'variants' => 'required|array',
-            'variants.*.sku' => 'required|string|distinct|max:191|unique:product_variants,sku',
+            'variants.*.sku' => 'required|string|distinct|max:191|unique:tenant.product_variants,sku',
             'variants.*.price' => 'required|numeric|min:0.01',
             'variants.*.stock_quantity' => 'required|integer|min:0',
             'variants.*.image_path' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
-            'variants.*.attributes' => 'required|array',
-            'variants.*.attributes.*.name' => 'required|string',
-            'variants.*.attributes.*.value' => 'required|string',
+            'variants.*.attributes' => 'nullable|array',
+            'variants.*.attributes.*.name' => 'required_with:variants.*.attributes|string',
+            'variants.*.attributes.*.value' => 'required_with:variants.*.attributes|string',
         ];
     }
 }
