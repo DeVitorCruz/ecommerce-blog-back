@@ -12,7 +12,11 @@ class StoreProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->guard()->check() && auth()->guard()->user()->seller;
+        $user = auth()->user();
+        return $user
+            && $user->hasPermissionTo('products.create') 
+            && $user->seller
+            && $user->seller->isActive();
     }
 
     /**

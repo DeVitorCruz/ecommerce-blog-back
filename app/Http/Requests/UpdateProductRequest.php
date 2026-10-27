@@ -23,10 +23,12 @@ class UpdateProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        $user = auth()->user();
 		$product = $this->route('product');
-        return auth()->check() && 
-			   auth()->user()->seller &&
-			   $product->seller_id === auth()->user()->seller->id;
+        return $user 
+            && $user->seller 
+            && $product->seller_id === $user->seller->id
+            && $user->hasPermissionTo('products.edit-own');
     }
 
     /**
@@ -41,7 +43,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|string|max:191',
-            'category_id' => 'sometimes|nullable|exists:categories,id',
+            'category_id' => 'sometimes|nullable|exists:tenant.categories,id',
             'description' => 'sometimes|nullable|string',
             'slug' => [
 				'sometimes', 'nullable', 'string', 'max:191',
