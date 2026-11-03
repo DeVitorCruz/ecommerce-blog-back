@@ -5,6 +5,7 @@
  use App\Http\Resources\SellerResource;
  use App\Models\Seller;
  use Illuminate\Http\JsonResponse;
+ use Illuminate\Http\Request;
 
  /**
   * Handles admin approval and rejection of seller onboarding requests.
@@ -52,7 +53,9 @@
 
         return response()->json([
             'message' => 'Seller approved successfully.',
-            'seller' => new SellerResource($seller->fresh('user')),
+            'seller' => new SellerResource(
+                $seller->fresh('user')
+            ),
         ]);
     }
 
@@ -63,7 +66,7 @@
      * @return JsonResponse 200 with updated SellerResource,
      *                      422 if the seller is not in pending state.
      */
-    public function reject(Seller $seller): JsonResponse
+    public function reject(Request $request, Seller $seller): JsonResponse
     {
         if ($seller->status !== 'pending') {
             return response()->json([
@@ -82,7 +85,9 @@
 
         return response()->json([
             'message' => 'Seller rejected.',
-            'seller' => new SellerResource($seller->fresh('user')),
+            'seller' => new SellerResource(
+                $seller->fresh('user')
+            ),
         ]);
     }
 

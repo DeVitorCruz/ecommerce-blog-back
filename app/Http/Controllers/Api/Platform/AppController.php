@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api\Platform;
 
 use App\Http\Controllers\Controller;
+use App\Services\Tenant\TenantProvisioningService;
 use App\Models\AppType;
 use App\Models\DomainMapping;
 use App\Models\Tenant;
 use App\Models\TenantApp;
 use App\Models\Theme;
+use App\Models\PlatformUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Artisan;
@@ -15,6 +17,10 @@ use Illuminate\Support\Str;
 
 class AppController extends Controller
 {
+    public function __construct(
+        private readonly TenantProvisioningService $provisioning,
+    ) {}
+
     /**
      * GET /platform/apps
      * List tenant's apps.
@@ -40,9 +46,10 @@ class AppController extends Controller
      */
     public function store(Request $request): JsonResponse 
     {
-        $user = $request->user();
+        /** @var PlatformUser $platformUser */
+        $platformUser = $request->user();
 
-        $tenant = Tenant::where('user_id', $user->id)
+        $tenant = Tenant::where('user_id', $platformUser->id)
             ->with('subscription.plan')
             ->firstOrFail();
         
@@ -62,16 +69,21 @@ class AppController extends Controller
             ], 403);
         }
 
+        // resolve app type and theme
         $appType = AppType::where('slug', $data['app_type_slug'])
             ->where('is_active', true)
             ->firstOrFail();
         
         // Get theme - defualt if not specified
-        $theme = $data['theme_slug']
-            ? Theme::where('slug', $data['theme_slug'])->where('app_type_id', $appType->id)->firstOrFail()
-            : Theme::where('app_type_id', $appType->id)->where('is_default', true)->firstOrFail();
+        $theme = ($data['theme_slug'] ?? null)
+            ? Theme::where('slug', $data['theme_slug'])
+                ->where('app_type_id', $appType->id)
+                ->firstOrFail()
+            : Theme::where('app_type_id', $appType->id)
+                ->where('is_default', true)
+                ->firstOrFail();
 
-        // Generate unique DB name
+        // create the TenantApp record
         $dbName = 'mercatura_tenant_' . $tenant->id . '_' . Str::random(6);
         $slug = Str::slug($data['name']) . '_' . Str::random(4);
 
@@ -85,7 +97,7 @@ class AppController extends Controller
             'status' => 'provisioning',
         ]);
 
-        // Create subdomain automatically
+        // Auto-create subdomain
         $subdomain = $tenant->slug . '-' . $slug . '.mercatura.devitor.local';
         DomainMapping::create([
             'tenant_app_id' => $tenantApp->id,
@@ -97,10 +109,10 @@ class AppController extends Controller
         ]);
 
         // Provision tenant DB
-        $this->provisionDatabase($dbName);
-        
-        // Mark app as active
-        $tenantApp->update(['status' => 'active']);
+        // TenantProvisioningService handles:
+        // CREATE DATABASE -> migrate:tenant -> seed roles -> owner user -> active
+        // On failure tha app is marked 'failed' and the exception re-thrown.
+        $this->provisioning->provision($tenantApp, $platformUser);
 
         return response()->json([
             'message' => 'App created and provisioned.',
@@ -139,36 +151,6 @@ class AppController extends Controller
         return response()->json([
             'message' => 'Theme switched successfully.',
             'app' => $tenantApp->fresh()->load(['appType', 'theme']),
-        ]);
-    }
-
-    // Private
-
-    /**
-     * Give necessary database
-     * 
-     * @param  string $dbName
-     * @return void
-     */
-    private function provisionDatabase(string $dbName): void
-    {
-        // Use root connection for DB creation and grants
-        $rootPdo = new \PDO(
-            'mysql:host=' . config('database.connections.mercatura.host') .
-            ';port=' . config('database.connections.mercatura.port'),
-            'root',
-            env('DB_ROOT_PASSWORD', 'root')
-        );
-
-        // Grant permssions to new DB
-        $rootPdo->exec("CREATE DATABASE IF NOT EXISTS `{$dbName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-        
-        $rootPdo->exec("GRANT ALL PRIVILEGES ON `{$dbName}`.* TO 'devitor'@'%'");
-        $rootPdo->exec("FLUSH PRIVILEGES");
-
-        // Run tenant migration on new DB
-        Artisan::call('migrate:tenant', [
-            'db' => $dbName,
         ]);
     }
 }

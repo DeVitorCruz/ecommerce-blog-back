@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('store_name')->unique();
             $table->string('slug')->unique(); // url friendly
             $table->text('description')->nullable();
-            $table->string('status')->default('pending'); // pending, active, suspended
+            $table->string('status')->default('pending'); // pending, approve, rejected, suspended
             $table->timestamps();
         });
     }

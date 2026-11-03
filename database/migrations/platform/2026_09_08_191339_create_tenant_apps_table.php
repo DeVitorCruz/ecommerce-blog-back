@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('db_name')->unique(); // mercatura_tenant_{id}
-            $table->string('status')->default('provisioning'); // provisioning|active|suspended
+            $table->string('status')->default('provisioning'); // provisioning|active|suspended|failed
             $table->json('settings')->nullable(); // app-specific config
             $table->timestamps();
         });

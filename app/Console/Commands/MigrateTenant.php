@@ -24,8 +24,10 @@ class MigrateTenant extends Command
 
     /**
      * Execute the console command.
+     * 
+     * @return int, 0 for sucessful migrate or faild otherwise.
      */
-    public function handle(): void
+    public function handle(): int
     {
         $db = $this->argument('db');
 
@@ -37,12 +39,18 @@ class MigrateTenant extends Command
             '--path' => 'database/migrations/tenant',
         ];
 
+        $exitCode = 0;
+
         if ($this->option('fresh')) {
-            Artisan::call('migrate:fresh', $options, $this->output);
+           $exitCode = Artisan::call('migrate:fresh', $options, $this->output);
         } else {
-            Artisan::call('migrate', $options, $this->output);
+           $exitCode = Artisan::call('migrate', $options, $this->output);
         }
 
-        $this->info("Tenant DB [{$db}] migrated successfully.");
+        if ($exitCode === 0) {
+            $this->info("Tenant DB [{$db}] migrated successfully.");
+        }
+
+        return $exitCode;
     }
 }

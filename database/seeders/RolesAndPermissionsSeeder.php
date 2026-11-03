@@ -7,21 +7,47 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use App\Models\User;
 
+/**
+ * Seeds tenant workspace and e-commerce app roles/permissions
+ * 
+ * Guard: web
+ * DB: tenant connection (mercatura_tenant_demo by default, driven by TENANT_DB env)
+ * 
+ * -- Workspace roles (mange the tenant workspace itself) ------------------
+ * tenant-owner - Full workspace control (apps, employees, billing)
+ * tenant-admin - Manage apps, invite employees, view billing
+ * tenant-editor - Tenant-wide content (announcements, docs)
+ * 
+ * -- E-commerce app roles (seeded at app creation; included here for dev) -
+ * store-admin - Full store control
+ * seller - Own producs, orders, hire store employees
+ * store-employee - Hired by seller; limited store access
+ * app-editor - Blog, FAQ, contacts for the app
+ * buyer - Cart, wishlist, orders
+ * 
+ * Run standalone:
+ *  php artisan db:seed --class=RolesAndPermissionsSeeder
+ * 
+ * To target a specific tenant DB at runtime:
+ *   TENANT_DB=mercatura_tenant_acme php artisan db:seed --class=RolesAndPermissionsSeeder
+ */
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
+        // --- Switch to tenant DB for the duration of this seeder ------
+        $previous = config('database.default');
+        config(['database.default' => 'tenant']);
+
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // - PERMISSIONS
         $permissions = [
-            // Users
-            'users.view',
-            'users.create',
-            'users.edit',
-            'users.delete',
-            'users.assign-roles',
+            // Workspace
+            'workspace.manage', // invite / remove members, menage settings
+            'workspace.billing.view', // view subscription and billing info
+            'workspace.apps.manage', // create / configure apps within workspace
 
             // Profiles
             'profiles.view',
@@ -30,23 +56,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
             // Employment
             'employment.view',
-            'employment.hire', // platform-level (owner/admin)
-            'employment.hire-for-store', // store-level (seller)
-            'employment.fire',
-
-            // Teams
-            'teams.view',
-            'teams.create',
-            'teams.edit-own', // team owner can edit their team
-            'teams.edit-any', 
-            'teams.delete-own',
-            'teams.delete-any',
-            'teams.manage-members', // add/remove members from own team
-            'teams.manage-any-members', // add/remove from any team
-            
-            // Staff Spotlights
-            'spotlights.view',
-            'spotlights.manage', // owner/admin only
+            'employment.manage-own-store', // seller hires / fires store employees 
             
             // Sellers
             'sellers.view',
@@ -64,6 +74,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'products.delete-own',
             'products.delete-any',
 
+            // Categories
+            'categories.view',
+            'categories.manage', // create / edit / delete
+            'categories.suggest', // suggest a new category (app-editor)
+
             // Orders
             'orders.view-own',
             'orders.view-any',
@@ -76,6 +91,10 @@ class RolesAndPermissionsSeeder extends Seeder
 
             // Wishlist
             'wishlist.manage',
+
+            // Reviews
+            'reviews.create',
+            'reviews.approve',
  
             // Blog
             'blog.view',
@@ -96,10 +115,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'contacts.view-any',
             'contacts.reply',
             'contacts.delete',
-
-            // Settings
-            'settings.view',
-            'settings.manage',
        ];
  
        foreach ($permissions as $perm) {
@@ -109,108 +124,115 @@ class RolesAndPermissionsSeeder extends Seeder
            ]);
        }
 
-       // - ROLES
+       $this->command->info(count($permissions) . ' tenant permissions seeded.');
 
-       // CUSTOMER - registered buyer
-       $customer = Role::firstOrCreate(['name' => 'customer', 'guard_name' => 'web']);
-       $customer->syncPermissions([
-           'profiles.view', 'profiles.edit-own',
-           'products.view',
-           'orders.view-own', 'orders.cancel-own',
-           'cart.manage',
-           'wishlist.manage',
-           'blog.view',
-           'faq.view',
-           'contacts.submit', 'contacts.view-own',
-           'sellers.apply',
-           'teams.view',
-           'spotlights.view',
+       // WORKSPACE ROLES
+
+       // TENANT-OWNER - full workspace control
+       $tenantOwner = Role::firstOrCreate(['name' => 'tenant-owner', 'guard_name' => 'web']);
+       $tenantOwner->syncPermissions(
+            Permission::where('guard_name', 'web')
+                ->pluck('name')->toArray()
+       );
+
+       // TENANT-ADMIN - manage apps and team, view billing
+       $tenantAdmin = Role::firstOrCreate(['name' => 'tenant-admin', 'guard_name' => 'web']);
+       $tenantAdmin->syncPermissions([
+            'workspace.apps.manage', 'workspace.billing.view', 
+            'profiles.view', 'profiles.edit-own', 
+            'sellers.view', 'sellers.approve', 'sellers.suspend', 
+            'products.view', 'products.edit-any', 'products.delete-any', 
+            'categories.view', 'categories.manage',
+            'orders.view-any', 'orders.update-status', 'orders.cancel-any',
+            'employment.view', 
+            'reviews.approve', 
+            'blog.view', 'blog.create', 'blog.edit-any', 'blog.publish',
+            'faq.view', 'faq.manage', 
+            'contacts.view-any', 'contacts.reply', 'contacts.delete',
        ]);
 
-       // EMPLOYEE - hired by owner or seller
-       $employee = Role::firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
-       $employee->syncPermissions([
-           'profiles.view', 'profiles.edit-own',
-           'products.view', 'products.create', 'products.edit-own',
-           'orders.view-any', 'orders.update-status',
-           'cart.manage',
-           'blog.view',
-           'faq.view',
-           'contacts.submit', 'contacts.view-own',
-           'teams.view',
-           'spotlights.view',
-       ]);
-
-       // EDITOR - content manager 
-       $editor = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'web']);
-       $editor->syncPermissions([
-           'profiles.view', 'profiles.edit-own',
-           'products.view',
-           'orders.view-own',
-           'cart.manage',
-           'blog.view', 'blog.create', 'blog.edit-own',
-           'blog.delete-own', 'blog.publish',
+       // TENANT-EDITOR - tenant-wide content management
+       $tenantEditor = Role::firstOrCreate(['name' => 'tenant-editor', 'guard_name' => 'web']);
+       $tenantEditor->syncPermissions([
+           'profiles.view', 'profiles.edit-own', 
+           'products.view', 
+           'categories.view', 'categories.suggest', 
+           'blog.view', 'blog.create', 'blog.edit-own', 'blog.delete-own', 'blog.publish', 
            'faq.view', 'faq.manage',
-           'contacts.submit', 'contacts.view-any', 'contacts.reply',
-           'teams.view', 'teams.create', 'teams.edit-own',
-           'teams.delete-own', 'teams.manage-members',
-           'spotlights.view',
+           'contacts.view-any', 'contacts.reply', 
        ]);
 
-       // SELLER - owns a store
+       // STORE-ADMIN - full store control within the app 
+       $storeAdmin = Role::firstOrCreate(['name' => 'store-admin', 'guard_name' => 'web']);
+       $storeAdmin->syncPermissions([
+           'profiles.view', 'profiles.edit-own',
+           'sellers.view', 'sellers.approve', 'sellers.edit-any', 'sellers.suspend',
+           'products.view', 'products.create', 'products.edit-any', 'products.delete-any',
+           'categories.view', 'categories.manage',
+           'orders.view-any', 'orders.update-status', 'orders.cancel-any',
+           'employment.view',
+           'reviews.approve',
+           'blog.view', 'blog.create', 'blog.edit-any', 'blog.publish',
+           'faq.view', 'faq.manage',
+           'contacts.view-any', 'contacts.reply', 'contacts.delete',
+       ]);
+
+       // SELLER - owns a store within the app
        $seller = Role::firstOrCreate(['name' => 'seller', 'guard_name' => 'web']);
        $seller->syncPermissions([
            'profiles.view', 'profiles.edit-own',
-           'products.view', 'products.create',
-           'products.edit-own', 'products.delete-own',
+           'products.view', 'products.create', 'products.edit-own', 'products.delete-own',
+           'categories.view', 'categories.suggest',
            'orders.view-own', 'orders.view-any', 'orders.update-status', 'orders.cancel-own',
-           'cart.manage',
-           'wishlist.manage',
+           'sellers.edit-own',
+           'employment.view', 'employment.manage-own-store',
            'blog.view',
            'faq.view',
            'contacts.submit', 'contacts.view-own',
-           'sellers.edit-own',
-           'employment.view', 'employment.hire-for-store', 'employment.fire',
-           'teams.view', 'teams.create', 'teams.edit-own',
-           'teams.delete-own', 'teams.manage-members',
-           'spotlights.view',
        ]);
 
-       // ADMIN - platform management
-       $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-       $admin->syncPermissions([
-           'users.view', 'users.create', 'users.edit', 'users.assign-roles',
-           'profiles.view', 'profiles.edit-own', 'profiles.edit-any',
-           'employment.view', 'employment.hire', 'employment.fire',
-           'teams.view', 'teams.create', 'teams.edit-own', 'teams.edit-any',
-           'teams.delete-own', 'teams.delete-any',
-           'teams.manage-members', 'teams.manage-any-members',
-           'spotlights.view', 'spotlights.manage',
-           'sellers.view', 'sellers.approve', 'sellers.edit-any', 'sellers.suspend',
-           'products.view', 'products.edit-any', 'products.delete-any',
-           'orders.view-any', 'orders.update-status', 'orders.cancel-any',
-           'cart.manage', 'wishlist.manage',
-           'blog.view', 'blog.create', 'blog.edit-own', 'blog.edit-any',
-           'faq.view', 'faq.manage',
-           'contacts.submit', 'contacts.view-any', 'contacts.reply', 'contacts.delete',
-           'settings.view',
+       // STORE-EMPLOYEE - hired by a seller
+       $storeEmployee = Role::firstOrCreate(['name' => 'store-employee', 'guard_name' => 'web']);
+       $storeEmployee->syncPermissions([
+           'profiles.view', 'profiles.edit-own',
+           'products.view', 'products.create', 'products.edit-own',
+           'categories.view',
+           'orders.view-any', 'orders.update-status',
+           'blog.view',
+           'faq.view',
+           'contacts.submit', 'contacts.view-any',
        ]);
 
-       // OWNER - full platform control
-       $owner = Role::firstOrCreate(['name' => 'owner', 'guard_name' => 'web']);
-       $owner->syncPermissions(Permission::all());
+       // APP-EDITOR - content management within the app
+       $appEditor = Role::firstOrCreate(['name' => 'app-editor', 'guard_name' => 'web']);
+       $appEditor->syncPermissions([
+            'profiles.view', 'profiles.edit-own',
+            'products.view',
+            'categories.view', 'categories.suggest',
+            'blog.view', 'blog.create', 'blog.edit-own', 'blog.delete-own', 'blog.publish',
+            'faq.view', 'faq.manage',
+            'contacts.view-any', 'contacts.reply',
+       ]);
 
-       // - ASSIGN OWNER TO ADMIN USER
+       // BUYER - and customer
+       $buyer = Role::firstOrCreate(['name' => 'buyer', 'guard_name' => 'web']);
+       $buyer->syncPermissions([
+            'profiles.view', 'profiles.edit-own',
+            'products.view',
+            'categories.view',
+            'orders.view-own', 'orders.cancel-own',
+            'cart.manage',
+            'wishlist.manage',
+            'sellers.apply',
+            'blog.view',
+            'faq.view',
+            'contacts.submit', 'contacts.view-own',
+       ]);
 
-       $adminUser = User::where('email', 'admin@ecommerce.local')->first();
-       if ($adminUser) {
-           if (!$adminUser->hasRole('owner')) {
-               $adminUser->assignRole('owner');
-           }
-           echo " owner role -> admin@ecommerce.local \n";
-       }
+        $this->command->info(Role::where('guard_name', 'web')->count() . ' tenant roles seeded.');
 
-       echo " ". Permission::count() ." permissions seeded \n";
-       echo " ". Role::count() ." roles seeded \n";
+       // - Restore previous default connection
+        config(['database.default' => $previous]);
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
    }
 }
