@@ -140,6 +140,8 @@
         return $request->user();
     });
 
+    Route::get('/me', [AuthController::class, 'me'])->name('api.me');
+
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('api.logout');
 

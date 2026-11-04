@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -16,11 +17,11 @@ class AuthController extends Controller
     /**
      * Handle user registration
      * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse 201, user successfully registered
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function register(Request $request)
+    public function register(Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'required|string|max:191',
@@ -34,8 +35,8 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-         // Assign default customer role on registration
-        $user->assignRole('customer');
+         // Assign default buyer role on registration
+        $user->assignRole('buyer');
 
         if (config('fortify.features.emailVerification'))
         {
@@ -44,19 +45,19 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user,
-            'token_type' => 'Bearer',
+            'user' => $this->userPlayload($user),
         ], 201);
     }
 
     /**
-     * Handle user login
+     * Authenticate a tenant user and issue a Sanctum Bearer token.
+     * Response includes roles + permissions
      * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse 201, user successfully logged
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|string|email',
@@ -71,39 +72,46 @@ class AuthController extends Controller
             ]);
         }
 
-        $deviceInfo = $this->getDeviceInfo($request);
-
         $token = $user->createToken('auth_token', ['*'])->plainTextToken;
 
         return response()->json([
             'message' => 'Logged in successfully',
-            'user' => $user,
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'device_info' => $deviceInfo,
-        ], 201);
+            'user' => $this->userPlayload($user),
+            'device_info' => $this->getDeviceInfo($request),
+        ]);
     }
 
     /**
-     * Handle user logout
+     * Revoke the current Bearer token.
      * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse 200, user successfully revoked
      */
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        if ($request->user()) {
-            $request->user()->currentAccesstoken()->delete();
-        }
+        $request->user()?->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully']);
     }
 
     /**
-     * Send a password reset link to the given user.
+     * Return the authenticated user with roles and permissions.
+     *  
+     * @param Request $request
+     * @return JsonResponse 200, user hydrated returned
+     */
+    public function me(Request $request): JsonResponse 
+    {
+        return response()->json($this->userPlayload($request->user())); 
+    }
+
+    /**
+     * Send a password reset link.
      * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse 200, reset link successfully sent
      * @throws \Illuminate\Validation\ValidationException
      */
     public function forgotPassword(Request $request)
@@ -118,16 +126,14 @@ class AuthController extends Controller
             return response()->json(['message' => __($status)], 200);
         }
 
-        throw ValidationException::withMessages([
-            'email' => [__($status)]
-        ]);
+        throw ValidationException::withMessages(['email' => [__($status)]]);
     }
 
     /**
      * Reset the given user's password.
      * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse 200, password successfully updated
      * @throws \Illuminate\Validation\ValidationException
      */
     public function resetPassword(Request $request)
@@ -152,50 +158,58 @@ class AuthController extends Controller
             return response()->json(['message' => __($status)], 200);
         }
 
-        throw ValidationException::withMessages([
-            'email' => [__($status)]
-        ]);
+        throw ValidationException::withMessages(['email' => [__($status)]]);
+    }
+
+    // Helpers
+
+    /**
+     * Feed all necessary information the user
+     * 
+     * @param User $user, user whow made the request
+     * @return array List with all user attributes 
+     */
+    private function userPlayload(User $user): array 
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $user->getRoleNames(),
+            'permissions' => $user->getAllPermissions()->pluck('name'),
+        ];
     }
 
     /**
-     * Helper method to extract device information from the request.
+     * Extract basic device metada from the request headers.
      * 
      * @param \Illuminate\Http\Request $request
-     * @return array
+     * @return array List all basic metadata
      */
     protected function getDeviceInfo(Request $request): array
     {
-        $userAgent = $request->header('User-Agent');
-        $ipAddress = $request->ip();
-        $acceptLanguage = $request->header('Accept-Language');
+        $ua = $request->header('User-Agent');
         $platform = null;
         $browser = null;
         $deviceType = 'Unknown';
 
-        if ($userAgent) {
-            if (preg_match('/(msie|firefox|chrome|safari|opera|edge|trident)/i', $userAgent, $matches)) {
-                $browser = strtolower($matches[1]);
-
-                if ($browser === 'msie' || $browser === 'trident') $browser = 'Internet Explorer';
+        if ($ua) {
+            if (preg_match('/(msie|firefox|chrome|safari|opera|edge|trident)/i', $ua, $m)) {
+                $browser = strtolower($m[1]);
+                if (in_array($browser, ['msie', 'trident'])) $browser = 'Internet Explorer';
+            }
+            if (preg_match('/windows|linux|mac os|android|iphone|ipad/i', $ua, $m)) {
+                $platform = strtolower($m[0]);
             }
 
-            if (preg_match('/windows|linux|mac os|android|iphone|ipad/i', $userAgent, $matches)) {
-                $platform = strtolower($matches[0]);
-            }
-
-            if (preg_match('/mobile|android|iphone|ipad/i', $userAgent)) {
-                $deviceType = 'Mobile';
-            } elseif (preg_match('/tablet/i', $userAgent)) {
-                $deviceType = 'Tablet';
-            } else {
-                $deviceType = 'Desktop';
-            }
+            $deviceType = preg_match('/mobile|android|iphone|ipad/i', $ua) ? 'Mobile' 
+                : (preg_match('/tablet/i', $ua) ? 'Tablet' : 'Desktop');
         }
 
         return [
-            'user_agent' => $userAgent,
-            'ip_address' => $ipAddress,
-            'accept_language' => $acceptLanguage,
+            'user_agent' => $ua,
+            'ip_address' => $request->ip(),
+            'accept_language' => $request->header('Accept-Language'),
             'browser' => $browser,
             'platform' => $platform,
             'device_type' => $deviceType,
