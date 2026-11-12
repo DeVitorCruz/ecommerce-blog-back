@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\Events\Registered;
 
 class PlatformAuthController extends Controller
 {   
@@ -37,14 +38,42 @@ class PlatformAuthController extends Controller
         $token = $user->createToken('platform-token', ['*'])->plainTextToken;
 
         return response()->json([
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'roles' => $user->getRoleNames(),
-            ],
+            'message' => 'Logged in successfully',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $this->userPayload($user),
         ]);
+    }
+
+    /**
+     * Register a new user in the platform
+     * 
+     * @param Request $request
+     * @return JsonResponse 201, user successfully created
+     */
+    public function register(Request $request): JsonResponse 
+    {
+        $request->validate([
+            'name' => 'required|string|max:191',
+            'email' => 'required|string|max:191|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = PlatformUser::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        if (config('fortify.features.emailVerification'))
+        {
+            event(new Registered($user));
+        }
+
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $this->userPayload($user),
+        ], 201);
     }
 
     /**
@@ -55,7 +84,7 @@ class PlatformAuthController extends Controller
      */
     public function logout(Request $request): JsonResponse 
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()?->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out.']);
     }
@@ -68,14 +97,23 @@ class PlatformAuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user();
+        return response()->json($this->userPayload($request->user()));
+    }
 
-        return response()->json([
+    /**
+     * Feed all necessary information the user
+     * 
+     * @param  PlatformUser $user, user whow made the request
+     * @return array List with all user attributes 
+     */
+    private function userPayload(PlatformUser $user): array 
+    {
+        return [
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
-        ]);
+        ]; 
     }
 }

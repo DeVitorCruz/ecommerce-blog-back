@@ -78,6 +78,8 @@ class TenantController extends Controller
             'current_period_end' => now()->addDays(14),
         ]);
 
+        $user->assignRole('tenant');
+
         return response()->json([
             'message' => 'Tenant created. You have 14 days free trial.',
             'tenant' => $tenant->load('subscription.plan'),

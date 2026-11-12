@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsPlatformStaff
 {
-    private const PLATFORM_ROLES = ['owner', 'admin', 'editor', 'support', 'tenant'];
+    private const PLATFORM_ROLES = ['owner', 'admin', 'editor', 'support'];
 
     /**
      * Handle an incoming request.

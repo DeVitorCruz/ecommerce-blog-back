@@ -101,14 +101,19 @@
  // ------ Platform API ------------------------------------
  // Public
  Route::prefix('platform')->group(function () {
-    Route::post('login', [PlatformAuthController::class, 'login']);
+    Route::post('register', [PlatformAuthController::class, 'register'])
+        ->middleware(['guest:'.config('fortify.guard')])
+        ->name('api.register');
+
+    Route::post('login', [PlatformAuthController::class, 'login'])
+        ->middleware(['guest:'.config('fortify.guard')])
+        ->name('api.login');
 
     Route::get('plans', [PlanController::class, 'index']);
     Route::get('plans/{plan}', [PlanController::class, 'show']);
     Route::get('themes', [ThemeController::class, 'index']);
 
-    // Auth required
-    Route::middleware('auth:sanctum', 'platform_staff')->group(function () {
+    Route::middleware(['auth:sanctum', 'platform_user'])->group(function () {
         Route::post('logout', [PlatformAuthController::class, 'logout']);
         Route::get('me', [PlatformAuthController::class, 'me']);
 
@@ -130,6 +135,11 @@
         // Dashboard
         Route::get('dashboard', [DashboardController::class, 'index']);
         Route::get('dashboard/app/{tenantApp}', [DashboardController::class, 'app']);
+    });
+
+    // Auth required
+    Route::middleware('auth:sanctum', 'platform_staff')->group(function () {
+        
     });
  });
 

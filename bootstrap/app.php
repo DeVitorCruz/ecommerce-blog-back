@@ -18,6 +18,7 @@
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'platform_staff' => \App\Http\Middleware\EnsureUserIsPlatformStaff::class,
+            'platform_user' => \App\Http\Middleware\EnsurePlatformUser::class,
         ]);
         $middleware->append(\App\Http\Middleware\ResolveTenant::class);
     })
