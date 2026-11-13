@@ -13,11 +13,12 @@ class Tenant extends Model
 
     protected $fillable = [
         'user_id', 'name', 'slug',
-        'status', 'trial_ends_at',
+        'status', 'trial_ends_at', 'suspended_at'
     ];
 
     protected $casts = [
         'trial_ends_at' => 'datetime',
+        'suspended_at' => 'datetime',
     ];
 
     /**
@@ -70,4 +71,31 @@ class Tenant extends Model
      * @return bool
      */
     public function isSuspended(): bool { return $this->status === 'suspended'; }
+
+    /**
+     * Suspend the tenant.
+     * Sets status to 'suspended' and records the timestamp.
+     * 
+     * @return bool
+     */
+    public function suspend(): bool
+    {
+        return $this->update([
+            'status' => 'suspended',
+            'suspended_at' => now(),
+        ]);
+    }
+
+    /**
+     * Reactivate a suspended tenant.
+     * 
+     * @return bool
+     */
+    public function activate(): bool 
+    {
+        return $this->update([
+            'status' => 'active',
+            'suspended_at' => null,
+        ]);
+    }
 }
