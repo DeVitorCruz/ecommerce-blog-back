@@ -41,6 +41,8 @@
  use App\Http\Controllers\Api\Platform\DomainController;
  use App\Http\Controllers\Api\Platform\DashboardController;
  use App\Http\Controllers\Api\Platform\PlatformAuthController;
+ use App\Http\Controllers\Api\Platform\StaffTenantController;
+ use App\Http\Controllers\Api\Platform\PlatformUserController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -139,7 +141,22 @@
 
     // Auth required
     Route::middleware('auth:sanctum', 'platform_staff')->group(function () {
-        
+        Route::prefix('staff')->group(function () {
+            Route::get('tenants', [StaffTenantController::class, 'index']);
+            Route::post('tenants', [StaffTenantController::class, 'store']);
+            Route::get('tenants/{tenant}', [StaffTenantController::class, 'show']);
+            Route::patch('tenants/{tenant}', [StaffTenantController::class, 'update']);
+            Route::delete('tenants/{tenant}', [StaffTenantController::class, 'destroy']);
+            Route::patch('tenants/{tenant}/suspend', [StaffTenantController::class, 'suspend']);
+            Route::patch('tenants/{tenant}/activate', [StaffTenantController::class, 'activate']);
+
+            Route::get('users', [PlatformUserController::class, 'index']);
+            Route::get('users/{user}', [PlatformUserController::class, 'show']);
+            Route::post('users', [PlatformUserController::class, 'store']);
+            Route::patch('users/{user}', [PlatformUserController::class, 'update']);
+            Route::delete('users/{user}', [PlatformUserController::class, 'destroy']);
+            Route::patch('users/{user}/roles', [PlatformUserController::class, 'syncRoles']);
+        });
     });
  });
 
