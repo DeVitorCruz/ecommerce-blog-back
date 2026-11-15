@@ -156,6 +156,10 @@
             Route::patch('users/{user}', [PlatformUserController::class, 'update']);
             Route::delete('users/{user}', [PlatformUserController::class, 'destroy']);
             Route::patch('users/{user}/roles', [PlatformUserController::class, 'syncRoles']);
+
+            Route::post('plans', [PlanController::class, 'store']);
+            Route::patch('plans/{plan}', [PlanController::class, 'update']);
+            Route::delete('plans/{plan}', [PlanController::class, 'destroy']);
         });
     });
  });
