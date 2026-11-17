@@ -43,6 +43,7 @@
  use App\Http\Controllers\Api\Platform\PlatformAuthController;
  use App\Http\Controllers\Api\Platform\StaffTenantController;
  use App\Http\Controllers\Api\Platform\PlatformUserController;
+ use App\Http\Controllers\Api\Platform\SubscriptionController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -160,6 +161,12 @@
             Route::post('plans', [PlanController::class, 'store']);
             Route::patch('plans/{plan}', [PlanController::class, 'update']);
             Route::delete('plans/{plan}', [PlanController::class, 'destroy']);
+
+            Route::get('subscriptions', [SubscriptionController::class, 'index']);
+            Route::get('subscriptions/{subscription}', [SubscriptionController::class, 'show']);
+            Route::patch('subscriptions/{subscription}', [SubscriptionController::class, 'update']);
+            Route::patch('subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel']);
+            Route::patch('subscriptions/{subscription}/change-plan', [SubscriptionController::class, 'changePlan']);
         });
     });
  });
