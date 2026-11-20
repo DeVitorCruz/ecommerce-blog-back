@@ -44,6 +44,7 @@
  use App\Http\Controllers\Api\Platform\StaffTenantController;
  use App\Http\Controllers\Api\Platform\PlatformUserController;
  use App\Http\Controllers\Api\Platform\SubscriptionController;
+ use App\Http\Controllers\Api\Platform\AppCatalogController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -167,6 +168,12 @@
             Route::patch('subscriptions/{subscription}', [SubscriptionController::class, 'update']);
             Route::patch('subscriptions/{subscription}/cancel', [SubscriptionController::class, 'cancel']);
             Route::patch('subscriptions/{subscription}/change-plan', [SubscriptionController::class, 'changePlan']);
+
+            Route::get('app-types', [AppCatalogController::class, 'index']);
+            Route::get('app-types/{appType}', [AppCatalogController::class, 'show']);
+            Route::post('app-types', [AppCatalogController::class, 'store']);
+            Route::patch('app-types/{appType}', [AppCatalogController::class, 'update']);
+            Route::delete('app-types/{appType}', [AppCatalogController::class, 'destroy']);
         });
     });
  });
