@@ -45,6 +45,7 @@
  use App\Http\Controllers\Api\Platform\PlatformUserController;
  use App\Http\Controllers\Api\Platform\SubscriptionController;
  use App\Http\Controllers\Api\Platform\AppCatalogController;
+ use App\Http\Controllers\Api\Platform\BillingController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -174,6 +175,11 @@
             Route::post('app-types', [AppCatalogController::class, 'store']);
             Route::patch('app-types/{appType}', [AppCatalogController::class, 'update']);
             Route::delete('app-types/{appType}', [AppCatalogController::class, 'destroy']);
+
+            Route::get('billing', [BillingController::class, 'index']);
+            Route::get('billing/tenant/{tenant}', [BillingController::class, 'tenant']);
+            Route::get('billing/{subscription}', [BillingController::class, 'show']);
+            Route::patch('billing/{subscription}', [BillingController::class, 'update']);
         });
     });
  });
