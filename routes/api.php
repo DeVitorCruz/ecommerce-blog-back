@@ -46,6 +46,7 @@
  use App\Http\Controllers\Api\Platform\SubscriptionController;
  use App\Http\Controllers\Api\Platform\AppCatalogController;
  use App\Http\Controllers\Api\Platform\BillingController;
+ use App\Http\Controllers\Api\Platform\PlatformContactController;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Route;
 
@@ -180,6 +181,11 @@
             Route::get('billing/tenant/{tenant}', [BillingController::class, 'tenant']);
             Route::get('billing/{subscription}', [BillingController::class, 'show']);
             Route::patch('billing/{subscription}', [BillingController::class, 'update']);
+
+            Route::get('contacts', [PlatformContactController::class, 'index']);
+            Route::get('contacts/{contact}', [PlatformContactController::class, 'show']);
+            Route::post('contacts/{contact}/reply', [PlatformContactController::class, 'reply']);
+            Route::delete('contacts/{contact}', [PlatformContactController::class, 'destroy']);
         });
     });
  });
